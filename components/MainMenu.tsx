@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function MainMenu({ activeMenu, onHover, onSelect }: Props) {
-  const playTick = useSound('/sounds/tic-sound.mp3', 0.4);
+  const playTick = useSound('/sounds/tic-sound.MP3', 0.4);
 
   return (
     <div className="ds-main-screen">

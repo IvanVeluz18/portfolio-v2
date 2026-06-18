@@ -42,8 +42,8 @@ export default function DarkSoulsPortfolio() {
   const [toast, setToast]             = useState('');
   const [toastVisible, setToastVisible] = useState(false);
 
-  const playEaster  = useSound('/sounds/easter-sound.mp3', 0.5);
-  const playBonfire = useSound('/sounds/bonfire-sound.mp3', 0.5);
+  const playEaster  = useSound('/sounds/easter-sound.MP3', 0.5);
+  const playBonfire = useSound('/sounds/bonfire-sound.MP3', 0.5);
 
   // ── Loading screen: fade out after 2.4s, unmount after 3.4s ───────────────
   useEffect(() => {

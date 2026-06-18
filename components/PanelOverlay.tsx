@@ -13,9 +13,9 @@ interface Props {
 export default function PanelOverlay({ section, visible, onClose }: Props) {
   const data = section ? PANEL_DATA[section] : null;
 
-  const playOpen = useSound('/sounds/open-sound.mp3', 0.5);
-  const playBack = useSound('/sounds/back-sound.mp3', 0.5);
-  const playTick = useSound('/sounds/tic-sound.mp3', 0.4); // 👈 reused here
+  const playOpen = useSound('/sounds/open-sound.MP3', 0.5);
+  const playBack = useSound('/sounds/back-sound.MP3', 0.5);
+  const playTick = useSound('/sounds/tic-sound.MP3', 0.4); // 👈 reused here
 
   useEffect(() => {
     if (visible) playOpen();
