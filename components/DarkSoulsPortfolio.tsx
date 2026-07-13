@@ -13,6 +13,16 @@ import YouDiedScreen from './YouDiedScreen';
 import Toast from './Toast';
 import { useSound } from '@/lib/useSound';
 
+// ── Drain map — fixed amounts per section, always the same ───────────────────
+const DRAIN: Record<string, { hp: number; fp: number; st: number }> = {
+  about:    { hp: 25, fp: 0,  st: 0  },
+  projects: { hp: 25, fp: 20,  st: 55 },
+  skills:   { hp: 25, fp: 50, st: 0  },
+  contact:  { hp: 25, fp: 30, st: 45 },
+};
+
+const INITIAL = { hp: 100, fp: 100, st: 100 };
+
 export default function DarkSoulsPortfolio() {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -27,25 +37,36 @@ export default function DarkSoulsPortfolio() {
   const [youDied, setYouDied]         = useState(false);
   const [youDiedText, setYouDiedText] = useState(false);
   const [youDiedSub, setYouDiedSub]   = useState(false);
-  // Incrementing this key forces YouDiedScreen to fully remount on each trigger,
-  // so CSS transitions reset cleanly even when triggered multiple times.
   const [youDiedKey, setYouDiedKey]   = useState(0);
 
   // ── HUD state ──────────────────────────────────────────────────────────────
-  const [souls, setSouls]         = useState(12800);
-  const [soulGlow, setSoulGlow]   = useState(false);
-  const [hp, setHp]               = useState(82);
-  const [fp, setFp]               = useState(60);
-  const [st, setSt]               = useState(95);
+  const [souls, setSouls]       = useState(12800);
+  const [soulGlow, setSoulGlow] = useState(false);
+  const [hp, setHp]             = useState(INITIAL.hp);
+  const [fp, setFp]             = useState(INITIAL.fp);
+  const [st, setSt]             = useState(INITIAL.st);
+
+  // Keep latest bar values in refs so callbacks always read fresh state
+  // without needing to be in their dependency arrays
+  const hpRef = useRef(INITIAL.hp);
+  const fpRef = useRef(INITIAL.fp);
+  const stRef = useRef(INITIAL.st);
+  useEffect(() => { hpRef.current = hp; }, [hp]);
+  useEffect(() => { fpRef.current = fp; }, [fp]);
+  useEffect(() => { stRef.current = st; }, [st]);
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   const [toast, setToast]             = useState('');
   const [toastVisible, setToastVisible] = useState(false);
 
-  const playEaster  = useSound('/sounds/easter-sound.MP3', 0.5);
-  const playBonfire = useSound('/sounds/bonfire-sound.MP3', 0.5);
+  // ── Sounds ────────────────────────────────────────────────────────────────
+  const playTick    = useSound('/sounds/tic-sound.mp3', 0.4);
+  const playOpen    = useSound('/sounds/open-sound.mp3', 0.5);
+  const playBack    = useSound('/sounds/back-sound.mp3', 0.5);
+  const playEaster  = useSound('/sounds/easter-sound.mp3', 0.6);
+  const playBonfire = useSound('/sounds/bonfire-sound.mp3', 0.5);
 
-  // ── Loading screen: fade out after 2.4s, unmount after 3.4s ───────────────
+  // ── Loading screen ─────────────────────────────────────────────────────────
   useEffect(() => {
     const t1 = setTimeout(() => setLoadingFadeOut(true), 2400);
     const t2 = setTimeout(() => setLoading(false), 3400);
@@ -60,13 +81,11 @@ export default function DarkSoulsPortfolio() {
       if (e.key === SEQ[idx]) {
         idx++;
         if (idx === SEQ.length) { idx = 0; triggerYouDied(); }
-      } else {
-        idx = 0;
-      }
+      } else { idx = 0; }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -77,18 +96,10 @@ export default function DarkSoulsPortfolio() {
   }, []);
 
   const addSouls = useCallback((n: number) => {
-    setSouls((s) => s + n);
+    setSouls(s => s + n);
     setSoulGlow(true);
     setTimeout(() => setSoulGlow(false), 600);
   }, []);
-
-  const handleBonfire = useCallback(() => {
-    playBonfire();
-    showToast('Bonfire Lit');
-    addSouls(500);
-    setHp(100); setFp(100); setSt(100);
-    setTimeout(() => { setHp(82); setFp(60); setSt(95); }, 2000);
-  }, [showToast, addSouls, playBonfire]);
 
   const triggerYouDied = useCallback(() => {
     playEaster();
@@ -96,20 +107,67 @@ export default function DarkSoulsPortfolio() {
     setYouDied(false);
     setYouDiedText(false);
     setYouDiedSub(false);
-    setYouDiedKey((k) => k + 1);
+    setYouDiedKey(k => k + 1);
     setTimeout(() => {
       setYouDied(true);
       setTimeout(() => setYouDiedText(true), 200);
-      setTimeout(() => setYouDiedSub(true), 600);
+      setTimeout(() => setYouDiedSub(true),  600);
     }, 50);
-  }, [playEaster]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const restoreStats = useCallback(() => {
+    setHp(INITIAL.hp);
+    setFp(INITIAL.fp);
+    setSt(INITIAL.st);
+  }, []);
+
+  const handleBonfire = useCallback(() => {
+    playBonfire();
+    showToast('Bonfire Lit');
+    addSouls(500);
+    restoreStats();
+  }, [playBonfire, showToast, addSouls, restoreStats]);
 
   const dismissDied = useCallback(() => {
     setYouDied(false);
-    handleBonfire();
+    restoreStats();
+    showToast('Bonfire Lit');
     setSouls(0);
     setTimeout(() => addSouls(12800), 100);
-  }, [handleBonfire, addSouls]);
+  }, [restoreStats, showToast, addSouls]);
+
+  // ── Drain logic ────────────────────────────────────────────────────────────
+  const drainStats = useCallback((section: string) => {
+    const d = DRAIN[section];
+    if (!d) return;
+
+    const newHp = Math.max(0, hpRef.current - d.hp);
+    const newFp = Math.max(0, fpRef.current - d.fp);
+    const newSt = Math.max(0, stRef.current - d.st);
+
+    setHp(newHp);
+    setFp(newFp);
+    setSt(newSt);
+
+    // Trigger You Died 1.5s after drain — gives user time to see bars hit zero
+    if (newHp === 0 && newFp === 0 && newSt === 0) {
+      setTimeout(() => triggerYouDied(), 1500);
+    }
+  }, [triggerYouDied]);
+
+  // ── Panel ──────────────────────────────────────────────────────────────────
+  const openPanel = useCallback((section: string) => {
+    playOpen();
+    drainStats(section);
+    setPanel(section);
+    setPanelVisible(true);
+  }, [playOpen, drainStats]);
+
+  const closePanel = useCallback(() => {
+    playBack();
+    setPanelVisible(false);
+  }, [playBack]);
 
   // ── Bonfire: 5-tap easter egg ──────────────────────────────────────────────
   const bonfireTaps  = useRef(0);
@@ -128,10 +186,6 @@ export default function DarkSoulsPortfolio() {
     }
   }, [handleBonfire, triggerYouDied]);
 
-  // ── Panel ──────────────────────────────────────────────────────────────────
-  const openPanel  = (section: string) => { setPanel(section); setPanelVisible(true); };
-  const closePanel = () => setPanelVisible(false);
-
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="ds-root" ref={rootRef}>
@@ -141,35 +195,30 @@ export default function DarkSoulsPortfolio() {
       <ParticlesCanvas containerRef={rootRef} />
       <div className="ds-vignette" />
 
-        <div className="ds-konami-hint">
-          <span className="ds-konami-desktop">Try: ↑ ↑ ↓ ↓</span>
-          <span className="ds-konami-mobile">Try: Bonfire ×5</span>
-        </div>
+      {/* <div className="ds-konami-hint">
+        <span className="ds-konami-desktop">Try: ↑ ↑ ↓ ↓</span>
+        <span className="ds-konami-mobile">Try tapping the bonfire 5 times</span>
+      </div> */}
 
       <SoulCounter souls={souls} glow={soulGlow} />
 
       <MainMenu
         activeMenu={activeMenu}
-        onHover={setActiveMenu}
+        onHover={(key) => { setActiveMenu(key); playTick(); }}
         onSelect={openPanel}
       />
 
-      {/* Bottom-left: HUD bars */}
       <HudBars hp={hp} fp={fp} st={st} />
 
-      {/* Bottom-right: bonfire */}
       <div className="ds-bonfire-area" onClick={handleBonfireClick}>
         <BonfireCanvas displayWidth={110} displayHeight={140} width={160} height={200} />
         <div className="ds-bonfire-label">Rest</div>
       </div>
 
-      {/* Section panel */}
       <PanelOverlay section={panel} visible={panelVisible} onClose={closePanel} />
 
-      {/* Toast notification */}
       <Toast message={toast} visible={toastVisible} />
 
-      {/* YOU DIED easter egg */}
       <YouDiedScreen
         key={youDiedKey}
         show={youDied}
