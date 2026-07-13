@@ -17,8 +17,8 @@ interface Props {
 const FULL_PANELS = ['projects', 'about', 'skills', 'contact'];
 
 export default function PanelOverlay({ section, visible, onClose }: Props) {
-  const playOpen = useSound('/sounds/open-sound.mp3', 0.5);
-  const playBack = useSound('/sounds/back-sound.mp3', 0.5);
+  const playOpen = useSound('/sounds/open-sound.MP3', 0.5);
+  const playBack = useSound('/sounds/back-sound.MP3', 0.5);
 
   useEffect(() => {
     if (visible) playOpen();

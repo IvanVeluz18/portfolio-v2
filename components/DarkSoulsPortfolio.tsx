@@ -60,11 +60,11 @@ export default function DarkSoulsPortfolio() {
   const [toastVisible, setToastVisible] = useState(false);
 
   // ── Sounds ────────────────────────────────────────────────────────────────
-  const playTick    = useSound('/sounds/tic-sound.mp3', 0.4);
-  const playOpen    = useSound('/sounds/open-sound.mp3', 0.5);
-  const playBack    = useSound('/sounds/back-sound.mp3', 0.5);
-  const playEaster  = useSound('/sounds/easter-sound.mp3', 0.6);
-  const playBonfire = useSound('/sounds/bonfire-sound.mp3', 0.5);
+  const playTick    = useSound('/sounds/tic-sound.MP3', 0.4);
+  const playOpen    = useSound('/sounds/open-sound.MP3', 0.5);
+  const playBack    = useSound('/sounds/back-sound.MP3', 0.5);
+  const playEaster  = useSound('/sounds/easter-sound.MP3', 0.6);
+  const playBonfire = useSound('/sounds/bonfire-sound.MP3', 0.5);
 
   // ── Loading screen ─────────────────────────────────────────────────────────
   useEffect(() => {

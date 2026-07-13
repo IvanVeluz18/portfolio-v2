@@ -17,7 +17,7 @@ type FormData = {
 
 export default function ContactPanel({ onClose }: Props) {
   const [copied, setCopied] = useState(false);
-  const playTick = useSound('/sounds/tic-sound.mp3', 0.4);
+  const playTick = useSound('/sounds/tic-sound.MP3', 0.4);
 
   const email = 'johnivanveluz@gmail.com';
 

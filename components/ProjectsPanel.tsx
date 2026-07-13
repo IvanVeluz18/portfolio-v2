@@ -91,9 +91,9 @@ export default function ProjectsPanel({ onClose }: Props) {
   const featured = PROJECTS.find(p => p.featured)!;
   const grid = PROJECTS.filter(p => !p.featured);
 
-  const playTick = useSound('/sounds/tic-sound.mp3', 0.4);
-  const playOpen = useSound('/sounds/open-sound.mp3', 0.5);
-  const playBack = useSound('/sounds/back-sound.mp3', 0.5);
+  const playTick = useSound('/sounds/tic-sound.MP3', 0.4);
+  const playOpen = useSound('/sounds/open-sound.MP3', 0.5);
+  const playBack = useSound('/sounds/back-sound.MP3', 0.5);
 
   const handleInspect = (p: Project) => {
     playOpen();

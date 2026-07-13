@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function AboutPanel({ onClose }: Props) {
-  const playTick = useSound('/sounds/tic-sound.mp3', 0.4);
+  const playTick = useSound('/sounds/tic-sound.MP3', 0.4);
 
   const stats = [
     { label: 'Years Experience', value: '5+' },
